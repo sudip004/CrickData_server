@@ -1,4 +1,4 @@
-
+// require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -29,7 +29,10 @@ app.use(
 
 app.use("/api",router)
 
-
+app.get("/",(req,res)=>{
+    res.send("Hello World");
+    return "hellow";
+})
 
 
 app.listen(port,()=>{
@@ -37,3 +40,8 @@ app.listen(port,()=>{
     if(!database) process.exit(1);
     console.log(`Server is running  ${port}`);
 })
+
+
+
+
+

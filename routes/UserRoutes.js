@@ -181,15 +181,25 @@ router.patch('/balance', authenticate, async (req, res) => {
 //logout
 router.post('/logout', authenticate, async (req, res) => {
     try {
-        req.user.tokens = req.user.tokens.filter((token) => {
-            return token.token !== req.token;
-        });
+        console.log("Logout request received"); // ✅ Debugging log
+        console.log("User:", req.user); // ✅ Ensure req.user is defined
+        console.log("Token:", req.token); // ✅ Ensure req.token is received
+
+        if (!req.user || !req.token) {
+            return res.status(400).json({ error: "Invalid request. User not authenticated." });
+        }
+
+        req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
         await req.user.save();
-        res.send();
+
+        res.status(200).json({ message: "Logout successful" });
     } catch (err) {
-        res.status(500).send(err.message);
+        console.error("Logout Error:", err); // ✅ Log actual error in backend console
+        res.status(500).json({ error: err.message });
     }
 });
+
+
 
 
 
