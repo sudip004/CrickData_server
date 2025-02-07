@@ -30,9 +30,9 @@ const userLogin = async (req, res) => {
         // start codeing jwt and seesion
         const token = jwt.sign({ _id: user._id, username: user.name,role: user.role }, `${process.env.JWT_SECRET}`, { expiresIn: '7d' });
         res.cookie('token', token,{httpOnly:true,secure:process.env.NODE_ENV === 'production',sameSite: "None"});
-        res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "https://stirring-cocada-682cb6.netlify.app");
-res.setHeader("Access-Control-Allow-Credentials", "true");
-res.status(200).json({ message: "User login", token });
+        res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL );
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.status(200).json({ message: "User login", token });
 
 
 
