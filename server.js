@@ -13,12 +13,12 @@ const router = require("./routes/UserRoutes");
 
 const port =process.env.PORT || 3000;
 
-app.use(
-    cors({
-      origin: `${process.env.FRONTEND_URL}`, 
-      credentials: true, 
-    })
-  );
+app.use(cors({
+    origin: process.env.FRONTEND_URL || "https://stirring-cocada-682cb6.netlify.app", 
+    credentials: true,  
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],  // ✅ Added PATCH method
+    allowedHeaders: ["Content-Type", "Authorization"],  
+}));
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
