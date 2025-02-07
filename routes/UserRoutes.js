@@ -148,7 +148,8 @@ router.get('/balance', authenticate, async (req, res) => {
     try {
         const balance = await UserBalance.findOne({ user: req.user._id });
         if (!balance) return res.status(404).json({ message: "Balance not found" });
-
+        console.log("get",req.user._id);
+        console.log("getbalance",balance);
         res.json(balance);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -159,6 +160,8 @@ router.post('/balance', authenticate, async (req, res) => {
     try {
         const balance = new UserBalance({ ...req.body, user: req.user._id });
         await balance.save();
+        console.log("post",req.user._id);
+        console.log("postbalance",balance);
         res.status(201).send(balance);
     } catch (err) {
         res.status(400).send(err.message);
