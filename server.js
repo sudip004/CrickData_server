@@ -19,6 +19,8 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],  // ✅ Added PATCH method
     allowedHeaders: ["Content-Type", "Authorization"],  
 }));
+app.use(cors({ origin: "*", credentials: true }));
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
