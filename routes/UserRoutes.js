@@ -2,8 +2,9 @@ const router = require('express').Router();
 const { userRegister, userLogin } = require('../controllers/UserController');
 const Match = require("../models/matchModel")
 const Prediction = require("../models/predictionModel")
-const  UserBalance = require("../models/balance")
-
+const UserBalance = require("../models/balance")
+const { v4: uuidv4 } = require('uuid');
+const cookieParser = require('cookie-parser');
 // middleware
 const { authenticate } = require('../middlewares/AuthUser');
 
@@ -12,10 +13,19 @@ const { authenticate } = require('../middlewares/AuthUser');
 router.post('/register', userRegister);
 router.post('/login', userLogin);
 
+router.get('/me', authenticate, (req, res) => {
+  res.json({
+    _id: req.user._id,
+  });
+});
+
 // Create Match
 router.post('/matchcreate', authenticate, async (req, res) => {
     try {
-        const match = new Match({ ...req.body, createdBy: req.user._id });
+        const match = new Match({
+            ...req.body,
+            createdBy: req.user._id,
+        });
         await match.save();
         res.status(201).send(match);
     } catch (err) {
@@ -27,17 +37,6 @@ router.post('/matchcreate', authenticate, async (req, res) => {
 router.patch('/matchupdate/:id', authenticate, async (req, res) => {
     try {
         const matchId = req.params.id;
-
-        // // Find the match first
-        // const match = await Match.findById(matchId);
-        // if (!match) {
-        //     return res.status(404).send({ message: 'Match not found' });
-        // }
-
-        // // Check if the authenticated user is the match creator
-        // if (match.createdBy.toString() !== req.user._id.toString()) {
-        //     return res.status(403).send({ message: 'You are not authorized to update this match' });
-        // }
 
         // Update the match
         const updatedMatch = await Match.findByIdAndUpdate(
@@ -66,9 +65,19 @@ router.get('/findcurrentmatch/:id', authenticate, async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+router.get('/checkuser', authenticate, async (req, res) => {
+    try {
+
+        res.status(200).send("user-present")
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
 
 // Get all matches
-router.get('/findlivematches', authenticate, async (req, res) => {
+router.get('/findlivematches', async (req, res) => {
     try {
         const matches = await Match.find({ status: 'live' });
         res.send(matches);
@@ -76,10 +85,12 @@ router.get('/findlivematches', authenticate, async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+
+//---------------------------------------------------------------------------------------------------------
 //upcomming matches
-router.get('/draftmatches', authenticate, async (req, res) => {
+router.get('/draftmatches',  async (req, res) => {
     try {
-        const matches = await Match.find({ status: 'draft' });
+        const matches = await Match.find({ status: 'completed' });
         res.send(matches);
     } catch (err) {
         res.status(500).send(err.message);
@@ -87,7 +98,7 @@ router.get('/draftmatches', authenticate, async (req, res) => {
 });
 
 
-// Create Prediction By User
+// Create Prediction By User-----------------------------------
 router.post('/prediction/:id', authenticate, async (req, res) => {
     try {
         const matchId = req.params.id;
@@ -100,7 +111,7 @@ router.post('/prediction/:id', authenticate, async (req, res) => {
             return res.status(400).json({ message: "Betting is only allowed on live matches!" });
         }
 
-        const prediction = new Prediction({ ...req.body, user: userId,match:matchId });
+        const prediction = new Prediction({ ...req.body, user: userId, match: matchId });
         await prediction.save();
         res.status(201).send(prediction);
     } catch (err) {
@@ -112,7 +123,7 @@ router.post('/prediction/:id', authenticate, async (req, res) => {
 router.patch('/prediction/:id', authenticate, async (req, res) => {
     try {
         const predictId = req.params.id;
-        
+
 
         const predictionMatch = await Prediction.findByIdAndUpdate(
             predictId,
@@ -144,12 +155,14 @@ router.get('/findprediction/:id', authenticate, async (req, res) => {
     }
 });
 
+
+// For Balance purpose-------------------------------------------
 router.get('/balance', authenticate, async (req, res) => {
     try {
         const balance = await UserBalance.findOne({ user: req.user._id });
         if (!balance) return res.status(404).json({ message: "Balance not found" });
 
-        res.json(balance);
+        res.status(200).json(balance);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -183,14 +196,23 @@ router.post('/logout', authenticate, async (req, res) => {
     try {
         console.log("Logout request received"); // ✅ Debugging log
         console.log("User:", req.user); // ✅ Ensure req.user is defined
-        console.log("Token:", req.token); // ✅ Ensure req.token is received
+        const token = req.cookies?.token;
+        // console.log("auth middleware - token from cookie:", token); 
 
         if (!req.user || !req.token) {
             return res.status(400).json({ error: "Invalid request. User not authenticated." });
         }
 
-        req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
-        await req.user.save();
+        // req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
+        // await req.user.save();
+
+        
+        // ✅ Clear the cookie
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true, // only if you're using HTTPS
+            sameSite: "strict"
+        });
 
         res.status(200).json({ message: "Logout successful" });
     } catch (err) {

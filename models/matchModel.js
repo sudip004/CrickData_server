@@ -30,6 +30,7 @@ const matchSchema = new mongoose.Schema({
   },
   isHosting: { type: Boolean, default: false },
   WiningTeam: { type: String },
+  streamId: { type: String, default: '' }, // For live streaming
 });
 
 module.exports = mongoose.model('Match', matchSchema);

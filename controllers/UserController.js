@@ -24,13 +24,13 @@ const userLogin = async (req, res) => {
         if(!user) return res.status(404).send('User not found');
         const isMatch = await user.comparePassword(password);
         if(!isMatch) return res.status(400).send('Invalid credentials');
-        console.log(user._id);
+        console.log("login",user._id);
         
 
         // start codeing jwt and seesion
         const token = jwt.sign({ _id: user._id, username: user.name,role: user.role }, `${process.env.JWT_SECRET}`, { expiresIn: '7d' });
         res.cookie('token', token,{httpOnly:true,secure:process.env.NODE_ENV === 'production',});
-        res.status(200).json({message:"user login", token });
+        res.status(200).json({message:"user login", token,user });
 
     }catch(error){
         res.status(400).send(error.message);
