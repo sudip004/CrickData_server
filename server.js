@@ -41,6 +41,8 @@ app.use(
   app.use(cookieParser());
   
   app.options('*', cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
   
 
