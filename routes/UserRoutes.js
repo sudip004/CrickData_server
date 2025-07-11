@@ -67,7 +67,7 @@ router.get('/findcurrentmatch/:id', authenticate, async (req, res) => {
 });
 router.get('/checkuser', authenticate, async (req, res) => {
     try {
-
+          console.log("DEBUG COOKIES", req.cookies);
         res.status(200).send("user-present")
     } catch (err) {
         res.status(500).send(err.message);
