@@ -29,7 +29,7 @@ const userLogin = async (req, res) => {
 
         // start codeing jwt and seesion
         const token = jwt.sign({ _id: user._id, username: user.name,role: user.role }, `${process.env.JWT_SECRET}`, { expiresIn: '7d' });
-        res.cookie('token', token,{httpOnly:true,secure:process.env.NODE_ENV === 'production',});
+        res.cookie('token', token,{httpOnly:true,secure:process.env.NODE_ENV === 'production',sameSite: 'None'});
         res.status(200).json({message:"user login", token,user });
 
     }catch(error){
